@@ -1,6 +1,9 @@
 # Training
 
 ## Applied Techniques
-1. Gradient Accumulation : 128 batches (contrastive model requires a large batch size)
+
+Since a contrastive models requires large batch size, the following techniques are applied.
+
+1. Gradient Accumulation : 128 batches 
 2. LoRA : rank 8
 3. Mixed Precision Training : bf16
