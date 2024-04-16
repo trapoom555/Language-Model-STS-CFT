@@ -33,7 +33,7 @@ TASK_LIST_RETRIEVAL = [
 ]
 ```
 
-The other model's evaluations can be seen in this [leaderboard](https://huggingface.co/spaces/mteb/leaderboard) in the Retrieval section.
+[MTEB github repository](https://github.com/embeddings-benchmark/mteb) provides us a convinient package for evaluation and is used in this evaluation script.
 
 ## Running Evaluation Script
 
@@ -45,9 +45,9 @@ All benchmarks for retrieval task is written in a `minicpm_eval.py` file. If you
 
 The model for evaluation can be specified in `./model/minicpm.py`. There're 3 important methods in the class
 
-1. `__init__()` loading a model and a tokenizer can be here.
-2. `get_last_hidden_state()` is used for embedding vector extraction. The embedding vector at the last layer is used as a defult.
-3. `encode()` giving a list of string, this function return a list of embedding vectors in numpy array format.
+1. `__init__(self)` loading script for a model and a tokenizer can be here.
+2. `get_last_hidden_state(self, text)` is used for embedding vector extraction. The embedding vector at the last layer is used as a defult.
+3. `encode(self, sentences, **kwargs)` giving a list of strings, this function return a list of embedding vectors in numpy array format.
 
 ### Run Evaluation
 
@@ -56,3 +56,9 @@ python minicpm_eval.py
 ```
 
 The results will be saved to `./results/minicpm`.
+
+## Compare with other models
+
+The other model's evaluations can be seen in this [leaderboard](https://huggingface.co/spaces/mteb/leaderboard) in a "Retrieval" section.
+
+
