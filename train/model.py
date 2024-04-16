@@ -21,7 +21,7 @@ class MiniCPMEncoder(L.LightningModule):
         self.dataloader = dataloader
 
     def forward(self, x):
-        inputs = self.tokenizer(x, return_tensors="pt", padding=True, truncation=True).to('cuda')
+        inputs = self.tokenizer(x, return_tensors="pt", padding=True, truncation=True, max_length=512).to('cuda')
         out = self.lora_model(**inputs, output_hidden_states=True).hidden_states[-1][:, -1, :]
         del inputs
         return out
