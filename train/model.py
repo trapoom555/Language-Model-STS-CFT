@@ -38,8 +38,9 @@ class MiniCPMEncoder(L.LightningModule):
         neg_em = self.forward(neg).unsqueeze(1)
         
         loss = self.info_nce(query_em, pos_em, neg_em)
-        
-        wandb.log({"train_loss": loss})
+
+        lr_schedule = self.lr_schedulers()
+        wandb.log({"train_loss": loss, 'lr': lr_schedule.get_lr()[0]})
         self.log("train_loss", loss, prog_bar=True)
 
         return loss
@@ -47,7 +48,7 @@ class MiniCPMEncoder(L.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         lr_scheduler = {
-                "scheduler": CosineAnnealingLR(optimizer, T_max=1000, eta_min=1e-7),
+                "scheduler": CosineAnnealingLR(optimizer, T_max=200, eta_min=1e-7),
                 "interval": "step",
                 "frequency": 1,
             }
