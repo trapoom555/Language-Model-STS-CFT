@@ -1,12 +1,14 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer
+from transformers import AutoTokenizer, AutoModelForCausalLM
+from torch.optim.lr_scheduler import CosineAnnealingLR
 from peft import LoraModel
 from info_nce import InfoNCE
 import lightning as L
 import torch
 
 class MiniCPMEncoder(L.LightningModule):
-    def __init__(self, lora_config, dataloader, lr):
+    def __init__(self, lora_config, dataloader, lr, n_grad_acc):
         super().__init__()
+
         path = 'openbmb/MiniCPM-2B-dpo-bf16'
 
         self.tokenizer = AutoTokenizer.from_pretrained(path)
@@ -19,6 +21,7 @@ class MiniCPMEncoder(L.LightningModule):
         
         self.lr = lr
         self.dataloader = dataloader
+        self.n_grad_acc = n_grad_acc
 
     def forward(self, x):
         inputs = self.tokenizer(x, return_tensors="pt", padding=True, truncation=True, max_length=512).to('cuda')
@@ -39,7 +42,15 @@ class MiniCPMEncoder(L.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=self.lr)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": CosineAnnealingLR(optimizer, T_max=1000, eta_min=1e-7),
+                "interval": "step",
+                "frequency": 1,
+            },
+        }
 
     def train_dataloader(self):
         return self.dataloader
