@@ -162,3 +162,9 @@ cython_debug/
 # eval results and datasets
 *.json
 *.csv
+
+# lightning logs
+lightning_logs/
+
+# ipynb
+*.ipynb
