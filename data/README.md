@@ -5,5 +5,5 @@
 ./download_nli.sh
 ```
 2. Distill from SOTA model.
-3. Other dataset : ELI5, HotpotQA, FEVER, MIRACL / MrTyDi / NQ
+3. Other datasets : ELI5, HotpotQA, FEVER, MIRACL / MrTyDi / NQ
 / SQuAD / TriviaQA, MS-MARCO, Quora Duplicates, DuReader / T2Ranking 
