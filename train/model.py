@@ -48,7 +48,7 @@ class MiniCPMEncoder(L.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         lr_scheduler = {
-                "scheduler": CosineAnnealingLR(optimizer, T_max=200, eta_min=1e-7),
+                "scheduler": CosineAnnealingLR(optimizer, T_max=1000, eta_min=1e-7),
                 "interval": "step",
                 "frequency": 1,
             }
