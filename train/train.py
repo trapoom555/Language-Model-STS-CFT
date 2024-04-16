@@ -19,14 +19,14 @@ wandb_logger = WandbLogger()
 ################################# Logger #################################
 
 config = {
-	"batch_size" : batch_size,
-	"epoch": epoch,
-	"max_lr": lr,
+    "batch_size" : batch_size,
+    "epoch": epoch,
+    "max_lr": lr,
 }
 
 wandb.init(
-	project="minicpm-dense-retrieval",
-	config=config
+    project="minicpm-dense-retrieval",
+    config=config
 )
 
 ##################################################################
@@ -42,13 +42,13 @@ lora_config = LoraConfig(
     )
 
 checkpoint_callback = ModelCheckpoint(
-		save_top_k=1,
-		monitor="train_loss",
-		mode="min",
-		dirpath="./checkpoint",
-		filename="minicpm-{train_loss:.4f}",
-		every_n_train_steps=10,
-	)
+        save_top_k=1,
+        monitor="train_loss",
+        mode="min",
+        dirpath="./checkpoint",
+        filename="minicpm-{train_loss:.4f}",
+        every_n_train_steps=10,
+    )
 
 lr_monitor = LearningRateMonitor(logging_interval='step')
 
