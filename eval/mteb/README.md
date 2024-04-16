@@ -33,7 +33,7 @@ TASK_LIST_RETRIEVAL = [
 ]
 ```
 
-[MTEB github repository](https://github.com/embeddings-benchmark/mteb) provides us a convinient package for evaluation and is used in this evaluation script.
+[MTEB github repository](https://github.com/embeddings-benchmark/mteb) provides us a convenient package for evaluation and is used in this evaluation script.
 
 ## Running Evaluation Script
 
@@ -55,7 +55,7 @@ The model for evaluation can be specified in `./model/minicpm.py`. There're 3 im
 python minicpm_eval.py
 ```
 
-The results will be saved to `./results/minicpm`.
+The evaluation results will be saved to `./results/minicpm`.
 
 ## Compare with other models
 
