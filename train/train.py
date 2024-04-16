@@ -18,16 +18,16 @@ wandb_logger = WandbLogger(log_model="all")
 
 ################################# Logger #################################
 
-# config = {
-#     "batch_size" : batch_size,
-#     "epoch": epoch,
-#     "max_lr": lr,
-# }
+config = {
+    "batch_size" : batch_size,
+    "epoch": epoch,
+    "max_lr": lr,
+}
 
-# wandb.init(
-#     project="minicpm-dense-retrieval",
-#     config=config
-# )
+wandb.init(
+    project="minicpm-dense-retrieval",
+    config=config
+)
 
 ##########################################################################
 
@@ -56,9 +56,11 @@ dataset = NLIDataset('../data/nli_for_simcse.csv')
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
 model = MiniCPMEncoder(lora_config=lora_config, dataloader=dataloader, lr=lr, n_grad_acc=n_grad_acc)
+wandb_logger.watch(model, log="all")
+
 trainer = L.Trainer(
         max_epochs=epoch, 
-        # logger=wandb_logger, 
+        logger=wandb_logger, 
         accelerator="cuda", 
         devices=[1], 
         accumulate_grad_batches=n_grad_acc, 
@@ -68,4 +70,4 @@ trainer = L.Trainer(
 
 trainer.fit(model=model)
 
-# wandb.finish()
+wandb.finish()

@@ -3,6 +3,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from peft import LoraModel
 from info_nce import InfoNCE
 import lightning as L
+import wandb
 import torch
 
 class MiniCPMEncoder(L.LightningModule):
@@ -37,6 +38,8 @@ class MiniCPMEncoder(L.LightningModule):
         neg_em = self.forward(neg).unsqueeze(1)
         
         loss = self.info_nce(query_em, pos_em, neg_em)
+        
+        wandb.log({"train_loss": loss})
         self.log("train_loss", loss, prog_bar=True)
 
         return loss
