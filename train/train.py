@@ -8,7 +8,7 @@ from lightning.pytorch.loggers import WandbLogger
 from lightning.pytorch.callbacks import ModelCheckpoint
 from lightning.pytorch.callbacks import LearningRateMonitor
 
-batch_size = 12
+batch_size = 8
 lr = 1e-3
 lora_rank = 8
 n_grad_acc = 128
@@ -29,7 +29,7 @@ wandb.init(
     config=config
 )
 
-##################################################################
+##########################################################################
 
 lora_config = LoraConfig(
         init_lora_weights="gaussian",
