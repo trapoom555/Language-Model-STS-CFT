@@ -168,3 +168,6 @@ lightning_logs/
 
 # ipynb
 *.ipynb
+
+# model checkpoint
+checkpoint/
