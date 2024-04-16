@@ -14,20 +14,20 @@ lora_rank = 8
 n_grad_acc = 128
 epoch = 5
 
-wandb_logger = WandbLogger()
+wandb_logger = WandbLogger(log_model="all")
 
 ################################# Logger #################################
 
-config = {
-    "batch_size" : batch_size,
-    "epoch": epoch,
-    "max_lr": lr,
-}
+# config = {
+#     "batch_size" : batch_size,
+#     "epoch": epoch,
+#     "max_lr": lr,
+# }
 
-wandb.init(
-    project="minicpm-dense-retrieval",
-    config=config
-)
+# wandb.init(
+#     project="minicpm-dense-retrieval",
+#     config=config
+# )
 
 ##########################################################################
 
@@ -46,7 +46,7 @@ checkpoint_callback = ModelCheckpoint(
         monitor="train_loss",
         mode="min",
         dirpath="./checkpoint",
-        filename="minicpm-{train_loss:.4f}",
+        filename="minicpm-{step}-{train_loss:.4f}",
         every_n_train_steps=10,
     )
 
@@ -58,13 +58,14 @@ dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_worker
 model = MiniCPMEncoder(lora_config=lora_config, dataloader=dataloader, lr=lr, n_grad_acc=n_grad_acc)
 trainer = L.Trainer(
         max_epochs=epoch, 
-        logger=wandb_logger, 
+        # logger=wandb_logger, 
         accelerator="cuda", 
         devices=[1], 
         accumulate_grad_batches=n_grad_acc, 
-        callbacks=[checkpoint_callback, lr_monitor]
+        callbacks=[checkpoint_callback, lr_monitor],
+        precision="bf16"
     )
 
 trainer.fit(model=model)
 
-wandb.finish()
+# wandb.finish()
