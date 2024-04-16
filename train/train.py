@@ -25,6 +25,6 @@ dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_worker
 
 
 model = MiniCPMEncoder(lora_config=lora_config, dataloader=dataloader, lr=lr)
-trainer = L.Trainer(max_epochs=1, accelerator="cuda", devices=[0])
+trainer = L.Trainer(max_epochs=1, accelerator="cuda", devices=[0], accumulate_grad_batches=128)
 
 trainer.fit(model=model)
