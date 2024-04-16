@@ -171,3 +171,6 @@ lightning_logs/
 
 # model checkpoint
 checkpoint/
+
+# wandb
+wandb/
