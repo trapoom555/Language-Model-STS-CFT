@@ -15,6 +15,7 @@ parser.add_argument('--init_lr', required=True)
 parser.add_argument('--final_lr', required=True)
 parser.add_argument('--lora_rank', required=True)
 parser.add_argument('--max_epoch', required=True)
+parser.add_argument('--temperature', required=True)
 parser.add_argument('--batch_size_per_gpu', required=True)
 args = vars(parser.parse_args())
 
@@ -24,6 +25,7 @@ LR = float(args['init_lr'])
 FINAL_LR = float(args['final_lr'])
 LORA_RANK = int(args['lora_rank'])
 MAX_EPOCH = int(args['max_epoch'])
+TEMPERATURE = float(args['temperature'])
 
 BATCH_SIZE = int(args['max_epoch'])  # 4 is safe for RTX3090 (RAM Limit)
 N_GRAD_ACC = int(DESIRE_BATCH_SIZE / N_GPUS / BATCH_SIZE)
@@ -38,7 +40,8 @@ config = {
     "lora_rank" : LORA_RANK,
     "epoch": MAX_EPOCH,
     "n_grad_acc": N_GRAD_ACC,
-    "n_gpus" : N_GPUS
+    "n_gpus" : N_GPUS,
+    "temperature" : TEMPERATURE
 }
 
 wandb_logger = WandbLogger(project="minicpm-dense-retrieval")
@@ -71,7 +74,8 @@ model = MiniCPMEncoder(lora_config=lora_config,
                        n_grad_acc=N_GRAD_ACC,
                        max_epochs=MAX_EPOCH,
                        final_lr = FINAL_LR,
-                       n_gpus=N_GPUS)
+                       n_gpus=N_GPUS,
+                       temperature=TEMPERATURE)
 
 trainer = L.Trainer(
         max_epochs=MAX_EPOCH, 
