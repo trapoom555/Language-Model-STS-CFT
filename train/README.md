@@ -13,7 +13,13 @@ git clone https://huggingface.co/openbmb/MiniCPM-2B-dpo-bf16
 "add_eos_token": true
 ```
 
-3. Run train script
+3. Create a `checkpoint` folder inside `$PROJ_DIR/train` folder to save a model checkpoint
+
+```bash
+mkdir $PROJ_DIR/train/checkpoint
+```
+
+4. Run train script
 
 ```bash
 python train.py
@@ -27,3 +33,7 @@ The following training techniques are applied.
 2. LoRA : rank 8
 3. Mixed Precision Training : bf16
 4. Learning Rate Scheduler : CosineAnnealingLR
+
+## TODO
+
+Data parallel distributed training
