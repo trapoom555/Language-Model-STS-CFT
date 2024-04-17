@@ -3,7 +3,6 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from peft import LoraModel
 from info_nce import InfoNCE
 import lightning as L
-import wandb
 import torch
 
 class MiniCPMEncoder(L.LightningModule):
@@ -49,16 +48,18 @@ class MiniCPMEncoder(L.LightningModule):
         
         loss = self.info_nce(query_em, pos_em, neg_em)
 
+        # loggings
         lr_schedule = self.lr_schedulers()
-        wandb.log({"train_loss": loss, 'lr': lr_schedule.get_lr()[0]})
         self.log("train_loss", loss, prog_bar=True)
+        self.log("lr", lr_schedule.get_lr()[0])
 
         return loss
 
     def configure_optimizers(self):
+        T_max = self.trainer.num_training_batches
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         lr_scheduler = {
-                "scheduler": CosineAnnealingLR(optimizer, T_max=1000, eta_min=1e-7),
+                "scheduler": CosineAnnealingLR(optimizer, T_max=T_max, eta_min=1e-7),
                 "interval": "step",
                 "frequency": 1,
             }
