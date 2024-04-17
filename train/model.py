@@ -6,7 +6,7 @@ import lightning as L
 import torch
 
 class MiniCPMEncoder(L.LightningModule):
-    def __init__(self, lora_config, dataloader, lr, n_grad_acc):
+    def __init__(self, lora_config, dataloader, lr, n_grad_acc, max_epochs):
         super().__init__()
 
         path = '../pretrained/MiniCPM-2B-dpo-bf16/'
@@ -27,6 +27,7 @@ class MiniCPMEncoder(L.LightningModule):
         self.lr = lr
         self.dataloader = dataloader
         self.n_grad_acc = n_grad_acc
+        self.max_epochs = max_epochs
 
         self.prompt = """#### Instruct: Given a premise, retrieve a hypothesis that is entailed by the premise Retrieve semantically similar text
         #### Query: {}"""
@@ -56,7 +57,7 @@ class MiniCPMEncoder(L.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        T_max = self.trainer.num_training_batches // self.trainer.accumulate_grad_batches
+        T_max = int(len(self.train_dataloader()) / self.n_grad_acc * self.max_epochs)
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         lr_scheduler = {
                 "scheduler": CosineAnnealingLR(optimizer, T_max=T_max, eta_min=1e-5),

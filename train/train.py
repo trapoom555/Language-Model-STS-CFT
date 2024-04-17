@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from lightning.pytorch.loggers import WandbLogger
 from lightning.pytorch.callbacks import ModelCheckpoint
 
-DESIRE_BATCH_SIZE = 1024
+DESIRE_BATCH_SIZE = 512
 N_GPUS = 3
 LR = 1e-4
 LORA_RANK = 8
@@ -51,7 +51,11 @@ checkpoint_callback = ModelCheckpoint(
 dataset = NLIDataset('../data/nli_for_simcse.csv')
 dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
 
-model = MiniCPMEncoder(lora_config=lora_config, dataloader=dataloader, lr=LR, n_grad_acc=N_GRAD_ACC)
+model = MiniCPMEncoder(lora_config=lora_config,
+                       dataloader=dataloader,
+                       lr=LR,
+                       n_grad_acc=N_GRAD_ACC,
+                       max_epochs=MAX_EPOCH)
 
 trainer = L.Trainer(
         max_epochs=MAX_EPOCH, 
