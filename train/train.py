@@ -8,20 +8,22 @@ from lightning.pytorch.loggers import WandbLogger
 from lightning.pytorch.callbacks import ModelCheckpoint
 from lightning.pytorch.callbacks import LearningRateMonitor
 
-batch_size = 8
-lr = 1e-3
-lora_rank = 8
-n_grad_acc = 128
-epoch = 5
+BATCH_SIZE = 8
+LR = 1e-3
+LORA_RANK = 8
+N_GRAD_ACC = 128
+MAX_EPOCH = 5
 
 wandb_logger = WandbLogger(log_model="all")
 
 ################################# Logger #################################
 
 config = {
-    "batch_size" : batch_size,
-    "epoch": epoch,
-    "max_lr": lr,
+    "batch_size" : BATCH_SIZE,
+    "lora_rank" : LORA_RANK,
+    "epoch": MAX_EPOCH,
+    "max_lr": LR,
+    "n_grad_acc": N_GRAD_ACC
 }
 
 wandb.init(
@@ -35,7 +37,7 @@ lora_config = LoraConfig(
         init_lora_weights="gaussian",
         task_type="CAUSAL_LM",
         target_modules=["q_proj", "v_proj"],
-        r=lora_rank,
+        r=LORA_RANK,
         lora_alpha=32,
         lora_dropout=0.1,
         inference_mode=False,
@@ -53,17 +55,17 @@ checkpoint_callback = ModelCheckpoint(
 lr_monitor = LearningRateMonitor(logging_interval='step')
 
 dataset = NLIDataset('../data/nli_for_simcse.csv')
-dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
 
-model = MiniCPMEncoder(lora_config=lora_config, dataloader=dataloader, lr=lr, n_grad_acc=n_grad_acc)
+model = MiniCPMEncoder(lora_config=lora_config, dataloader=dataloader, lr=LR, n_grad_acc=MAX_EPOCH)
 wandb_logger.watch(model, log="all")
 
 trainer = L.Trainer(
-        max_epochs=epoch, 
+        max_epochs=MAX_EPOCH, 
         logger=wandb_logger, 
         accelerator="cuda", 
         devices=[1], 
-        accumulate_grad_batches=n_grad_acc, 
+        accumulate_grad_batches=MAX_EPOCH, 
         callbacks=[checkpoint_callback, lr_monitor],
         precision="bf16"
     )
