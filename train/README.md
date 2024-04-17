@@ -33,7 +33,7 @@ The following training techniques are applied.
 2. LoRA : rank 8
 3. Mixed Precision Training : bf16
 4. Learning Rate Scheduler : CosineAnnealingLR
-5. Data parallel distributed training
+5. Data Parallel Distributed Training
 
 ## Batch Size
 
