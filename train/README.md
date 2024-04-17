@@ -37,7 +37,7 @@ The following training techniques are applied.
 
 ## Batch Size
 
-Having `d` gpu devices, `b` batch size, `k` gradient accumulation steps is equivalent to training with batch size `d*b*k`.
+Having `d` GPU devices, `b` batch size per GPU and `k` gradient accumulation steps is equivalent to training with batch size of `d*b*k`.
 
 ## TODO
 
