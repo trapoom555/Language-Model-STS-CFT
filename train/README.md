@@ -33,8 +33,13 @@ The following training techniques are applied.
 2. LoRA : rank 8
 3. Mixed Precision Training : bf16
 4. Learning Rate Scheduler : CosineAnnealingLR
+5. Data parallel distributed training
+
+## Batch Size
+
+Having `d` gpu devices, `b` batch size, `k` gradient accumulation steps is equivalent to training with batch size `d*b*k`.
 
 ## TODO
 
-- Data parallel distributed training (further increase experiment speed)
+- Train the best model
 - Train from more data sources with more instructions
