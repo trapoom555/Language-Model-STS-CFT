@@ -15,7 +15,10 @@ class MiniCPMEncoder(L.LightningModule):
         self.tokenizer = AutoTokenizer.from_pretrained(path)
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
-        model = AutoModelForCausalLM.from_pretrained(path, torch_dtype=torch.bfloat16, device_map=self.device, trust_remote_code=True)
+        model = AutoModelForCausalLM.from_pretrained(path, 
+                                                     torch_dtype=torch.bfloat16, 
+                                                     device_map=self.device, 
+                                                     trust_remote_code=True)
         self.lora_model = LoraModel(model, lora_config, "default")
 
         self.info_nce = InfoNCE(negative_mode='paired')
@@ -24,7 +27,11 @@ class MiniCPMEncoder(L.LightningModule):
         self.dataloader = dataloader
         self.n_grad_acc = n_grad_acc
 
+        self.prompt = """#### Instruct: Given a premise, retrieve a hypothesis that is entailed by the premise Retrieve semantically similar text
+        #### Query: {}"""
+
     def forward(self, x):
+        x = [self.prompt.format(t) for t in x]
         inputs = self.tokenizer(x, return_tensors="pt", padding=True, truncation=True, max_length=512).to(self.device)
         out = self.lora_model(**inputs, output_hidden_states=True).hidden_states[-1][:, -1, :]
         del inputs
