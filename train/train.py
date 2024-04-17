@@ -9,7 +9,7 @@ from lightning.pytorch.callbacks import ModelCheckpoint
 
 DESIRE_BATCH_SIZE = 1024
 N_GPUS = 3
-LR = 1e-3
+LR = 1e-4
 LORA_RANK = 8
 MAX_EPOCH = 2
 
