@@ -28,6 +28,7 @@ config = {
 }
 
 wandb_logger = WandbLogger(project="minicpm-dense-retrieval")
+
 ##########################################################################
 
 lora_config = LoraConfig(
