@@ -177,6 +177,3 @@ wandb/
 
 # pretrained model
 pretrained/
-
-# script (can change local)
-train/train.sh
