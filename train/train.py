@@ -70,7 +70,8 @@ model = MiniCPMEncoder(lora_config=lora_config,
                        lr=LR,
                        n_grad_acc=N_GRAD_ACC,
                        max_epochs=MAX_EPOCH,
-                       final_lr = FINAL_LR)
+                       final_lr = FINAL_LR,
+                       n_gpus=N_GPUS)
 
 trainer = L.Trainer(
         max_epochs=MAX_EPOCH, 
