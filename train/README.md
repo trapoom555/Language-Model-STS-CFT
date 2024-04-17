@@ -1,5 +1,24 @@
 # Training
 
+## How to train
+
+1. Clone MiniCPM huggingface project to `$PROJ_DIR/pretrained`
+
+```bash
+git clone https://huggingface.co/openbmb/MiniCPM-2B-dpo-bf16
+```
+2. Change a tokenizer setting in `tokenizer_config.json`
+
+```json
+"add_eos_token": true
+```
+
+3. Run train script
+
+```bash
+python train.py
+```
+
 ## Applied Techniques
 
 The following training techniques are applied.
