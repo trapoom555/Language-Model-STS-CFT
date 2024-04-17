@@ -36,4 +36,5 @@ The following training techniques are applied.
 
 ## TODO
 
-Data parallel distributed training
+- Data parallel distributed training (further increase experiment speed)
+- Train from more data sources with more instructions
