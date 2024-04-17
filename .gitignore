@@ -162,3 +162,21 @@ cython_debug/
 # eval results and datasets
 *.json
 *.csv
+
+# lightning logs
+lightning_logs/
+
+# ipynb
+*.ipynb
+
+# model checkpoint
+checkpoint/
+
+# wandb
+wandb/
+
+# pretrained model
+pretrained/
+
+# script (can change local)
+train/train.sh
