@@ -34,7 +34,7 @@ class MiniCPMEncoder(L.LightningModule):
         self.prompt = """#### Instruct: Given a premise, retrieve a hypothesis that is entailed by the premise Retrieve semantically similar text
         #### Query: {}"""
 
-    def forward(self, x, with_prompt=True):
+    def forward(self, x, with_prompt=False):
         if with_prompt:
             x = [self.prompt.format(t) for t in x]
         inputs = self.tokenizer(x, return_tensors="pt", padding=True, truncation=True, max_length=512).to(self.device)
@@ -75,7 +75,7 @@ class MiniCPMEncoder(L.LightningModule):
     def training_step(self, batch, batch_idx):
         x, pos, neg = batch
 
-        query_em = self.forward(x, with_prompt=True)
+        query_em = self.forward(x, with_prompt=False)
         pos_em = self.forward(pos, with_prompt=False)
         neg_em = self.forward(neg, with_prompt=False)
         
