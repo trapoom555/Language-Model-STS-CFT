@@ -42,5 +42,7 @@ Having `d` GPU devices, `b` batch size per GPU and `k` gradient accumulation ste
 
 ## TODO
 
+- Increase batch size per GPU
+- Add STS benchmark as a validation step
 - Train the best model
 - Train from more data sources with more instructions
