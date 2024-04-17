@@ -1,12 +1,13 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM
-from torch.optim.lr_scheduler import CosineAnnealingLR
-from peft import LoraModel
-from info_nce import InfoNCE
-import lightning as L
 import torch
+import lightning as L
+from peft import LoraModel
+import torch.nn.functional as F
+from torch.optim.lr_scheduler import CosineAnnealingLR
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
 
 class MiniCPMEncoder(L.LightningModule):
-    def __init__(self, lora_config, dataloader, lr, n_grad_acc, max_epochs, final_lr, n_gpus):
+    def __init__(self, lora_config, dataloader, lr, n_grad_acc, max_epochs, final_lr, n_gpus, temperature):
         super().__init__()
 
         path = '../pretrained/MiniCPM-2B-dpo-bf16/'
@@ -21,8 +22,6 @@ class MiniCPMEncoder(L.LightningModule):
                                                      local_files_only=True)
         
         self.lora_model = LoraModel(model, lora_config, "default")
-
-        self.info_nce = InfoNCE(negative_mode='paired')
         
         self.lr = lr
         self.final_lr = final_lr
@@ -30,6 +29,7 @@ class MiniCPMEncoder(L.LightningModule):
         self.n_grad_acc = n_grad_acc
         self.max_epochs = max_epochs
         self.n_gpus = n_gpus
+        self.temperature = temperature
 
         self.prompt = """#### Instruct: Given a premise, retrieve a hypothesis that is entailed by the premise Retrieve semantically similar text
         #### Query: {}"""
@@ -41,13 +41,43 @@ class MiniCPMEncoder(L.LightningModule):
         out = self.lora_model(**inputs, output_hidden_states=True).hidden_states[-1][:, -1, :]
         del inputs
         return out
+    
+    def info_nce(self, query, pos, neg):
+        '''
+            Use other samples in batch as negative samples.
+
+            query, pos, neg : [B, E]
+
+            where B is a batch_size, E is an embedding size
+        '''
+
+        # normalize
+        query = F.normalize(query, dim=-1)
+        pos = F.normalize(pos, dim=-1)
+        neg = F.normalize(neg, dim=-1)
+
+        # compute cosine sim
+        logits_pos = query @ pos.T
+        logits_neg = query @ neg.T
+
+        # concat logits
+        logits = torch.cat((logits_pos, logits_neg), dim=1)
+
+        # generate label
+        labels = torch.arange(len(query), device=self.device)
+
+        # cross-entropy
+        loss = F.cross_entropy(logits / self.temperature, labels, reduction='mean')
+
+        return loss
+
 
     def training_step(self, batch, batch_idx):
         x, pos, neg = batch
 
         query_em = self.forward(x, with_prompt=True)
         pos_em = self.forward(pos, with_prompt=False)
-        neg_em = self.forward(neg, with_prompt=False).unsqueeze(1)
+        neg_em = self.forward(neg, with_prompt=False)
         
         loss = self.info_nce(query_em, pos_em, neg_em)
 
