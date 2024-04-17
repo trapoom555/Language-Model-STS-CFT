@@ -29,7 +29,7 @@ python train.py
 
 The following training techniques are applied.
 
-1. Gradient Accumulation : 128 batches (contrastive models require large batch size)
+1. Gradient Accumulation : Contrastive models require large batch size for training stability
 2. LoRA : rank 8
 3. Mixed Precision Training : bf16
 4. Learning Rate Scheduler : CosineAnnealingLR
