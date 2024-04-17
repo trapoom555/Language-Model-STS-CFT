@@ -174,3 +174,6 @@ checkpoint/
 
 # wandb
 wandb/
+
+# pretrained model
+pretrained/
