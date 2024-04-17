@@ -59,7 +59,7 @@ class MiniCPMEncoder(L.LightningModule):
         T_max = self.trainer.num_training_batches // self.trainer.accumulate_grad_batches
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         lr_scheduler = {
-                "scheduler": CosineAnnealingLR(optimizer, T_max=T_max, eta_min=1e-7),
+                "scheduler": CosineAnnealingLR(optimizer, T_max=T_max, eta_min=1e-5),
                 "interval": "step",
                 "frequency": 1,
             }
