@@ -6,7 +6,6 @@ from dataset_utils import NLIDataset
 from torch.utils.data import DataLoader
 from lightning.pytorch.loggers import WandbLogger
 from lightning.pytorch.callbacks import ModelCheckpoint
-from lightning.pytorch.callbacks import LearningRateMonitor
 
 BATCH_SIZE = 8
 LR = 1e-3
@@ -52,8 +51,6 @@ checkpoint_callback = ModelCheckpoint(
         every_n_train_steps=10,
     )
 
-lr_monitor = LearningRateMonitor(logging_interval='step')
-
 dataset = NLIDataset('../data/nli_for_simcse.csv')
 dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
 
@@ -66,7 +63,7 @@ trainer = L.Trainer(
         accelerator="cuda", 
         devices=[1], 
         accumulate_grad_batches=MAX_EPOCH, 
-        callbacks=[checkpoint_callback, lr_monitor],
+        callbacks=[checkpoint_callback],
         precision="bf16"
     )
 
