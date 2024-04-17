@@ -1,4 +1,4 @@
-import wandb
+import argparse
 import lightning as L
 from peft import LoraConfig
 from model import MiniCPMEncoder
@@ -7,24 +7,38 @@ from torch.utils.data import DataLoader
 from lightning.pytorch.loggers import WandbLogger
 from lightning.pytorch.callbacks import ModelCheckpoint
 
-DESIRE_BATCH_SIZE = 512
+################################# Parser #################################
+
+parser = argparse.ArgumentParser(description='MiniCPM Training Script')
+parser.add_argument('--desire_batch_size', required=True)
+parser.add_argument('--init_lr', required=True)
+parser.add_argument('--final_lr', required=True)
+parser.add_argument('--lora_rank', required=True)
+parser.add_argument('--max_epoch', required=True)
+parser.add_argument('--batch_size_per_gpu', required=True)
+args = vars(parser.parse_args())
+
+DESIRE_BATCH_SIZE = int(args['desire_batch_size'])
 N_GPUS = 3
-LR = 1e-4
-LORA_RANK = 8
-MAX_EPOCH = 2
+LR = float(args['init_lr'])
+FINAL_LR = float(args['final_lr'])
+LORA_RANK = int(args['lora_rank'])
+MAX_EPOCH = int(args['max_epoch'])
 
-BATCH_SIZE = 4  # Fixed for RTX3090 (RAM Limit)
+BATCH_SIZE = int(args['max_epoch'])  # 4 is safe for RTX3090 (RAM Limit)
 N_GRAD_ACC = int(DESIRE_BATCH_SIZE / N_GPUS / BATCH_SIZE)
-
 
 ################################# Logger #################################
 
 config = {
-    "batch_size" : BATCH_SIZE,
+    "desire_batch_size" : DESIRE_BATCH_SIZE,
+    "init_lr": LR,
+    "final_lr": FINAL_LR,
+    "batch_size_per_gpu" : BATCH_SIZE,
     "lora_rank" : LORA_RANK,
     "epoch": MAX_EPOCH,
-    "max_lr": LR,
-    "n_grad_acc": N_GRAD_ACC
+    "n_grad_acc": N_GRAD_ACC,
+    "n_gpus" : N_GPUS
 }
 
 wandb_logger = WandbLogger(project="minicpm-dense-retrieval")
@@ -55,7 +69,8 @@ model = MiniCPMEncoder(lora_config=lora_config,
                        dataloader=dataloader,
                        lr=LR,
                        n_grad_acc=N_GRAD_ACC,
-                       max_epochs=MAX_EPOCH)
+                       max_epochs=MAX_EPOCH,
+                       final_lr = FINAL_LR)
 
 trainer = L.Trainer(
         max_epochs=MAX_EPOCH, 

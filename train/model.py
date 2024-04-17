@@ -6,7 +6,7 @@ import lightning as L
 import torch
 
 class MiniCPMEncoder(L.LightningModule):
-    def __init__(self, lora_config, dataloader, lr, n_grad_acc, max_epochs):
+    def __init__(self, lora_config, dataloader, lr, n_grad_acc, max_epochs, final_lr):
         super().__init__()
 
         path = '../pretrained/MiniCPM-2B-dpo-bf16/'
@@ -25,6 +25,7 @@ class MiniCPMEncoder(L.LightningModule):
         self.info_nce = InfoNCE(negative_mode='paired')
         
         self.lr = lr
+        self.final_lr = final_lr
         self.dataloader = dataloader
         self.n_grad_acc = n_grad_acc
         self.max_epochs = max_epochs
@@ -60,7 +61,7 @@ class MiniCPMEncoder(L.LightningModule):
         T_max = int(len(self.train_dataloader()) / self.n_grad_acc * self.max_epochs)
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         lr_scheduler = {
-                "scheduler": CosineAnnealingLR(optimizer, T_max=T_max, eta_min=1e-5),
+                "scheduler": CosineAnnealingLR(optimizer, T_max=T_max, eta_min=self.final_lr),
                 "interval": "step",
                 "frequency": 1,
             }
