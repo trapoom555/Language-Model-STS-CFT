@@ -54,7 +54,7 @@ checkpoint_callback = ModelCheckpoint(
 dataset = NLIDataset('../data/nli_for_simcse.csv')
 dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
 
-model = MiniCPMEncoder(lora_config=lora_config, dataloader=dataloader, lr=LR, n_grad_acc=MAX_EPOCH)
+model = MiniCPMEncoder(lora_config=lora_config, dataloader=dataloader, lr=LR, n_grad_acc=N_GRAD_ACC)
 wandb_logger.watch(model, log="all")
 
 trainer = L.Trainer(
@@ -62,7 +62,7 @@ trainer = L.Trainer(
         logger=wandb_logger, 
         accelerator="cuda", 
         devices=[1], 
-        accumulate_grad_batches=MAX_EPOCH, 
+        accumulate_grad_batches=N_GRAD_ACC, 
         callbacks=[checkpoint_callback],
         precision="bf16"
     )
