@@ -10,15 +10,17 @@ class MiniCPMEncoder(L.LightningModule):
     def __init__(self, lora_config, dataloader, lr, n_grad_acc):
         super().__init__()
 
-        path = 'openbmb/MiniCPM-2B-dpo-bf16'
+        path = '../pretrained/MiniCPM-2B-dpo-bf16/'
 
-        self.tokenizer = AutoTokenizer.from_pretrained(path)
+        self.tokenizer = AutoTokenizer.from_pretrained(path, local_files_only=True)
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
         model = AutoModelForCausalLM.from_pretrained(path, 
                                                      torch_dtype=torch.bfloat16, 
                                                      device_map=self.device, 
-                                                     trust_remote_code=True)
+                                                     trust_remote_code=True,
+                                                     local_files_only=True)
+        
         self.lora_model = LoraModel(model, lora_config, "default")
 
         self.info_nce = InfoNCE(negative_mode='paired')
