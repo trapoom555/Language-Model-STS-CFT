@@ -22,7 +22,8 @@ mkdir $PROJ_DIR/train/checkpoint
 4. Run train script
 
 ```bash
-python train.py
+chmod +x train.sh
+./train.sh
 ```
 
 ## Applied Techniques
