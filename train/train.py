@@ -17,6 +17,7 @@ parser.add_argument('--lora_rank', required=True)
 parser.add_argument('--max_epoch', required=True)
 parser.add_argument('--temperature', required=True)
 parser.add_argument('--batch_size_per_gpu', required=True)
+parser.add_argument('--logging', required=True)
 args = vars(parser.parse_args())
 
 DESIRE_BATCH_SIZE = int(args['desire_batch_size'])
@@ -29,6 +30,7 @@ TEMPERATURE = float(args['temperature'])
 
 BATCH_SIZE = int(args['max_epoch'])  # 4 is safe for RTX3090 (RAM Limit)
 N_GRAD_ACC = int(DESIRE_BATCH_SIZE / N_GPUS / BATCH_SIZE)
+IS_LOG = (True if args['logging'] == 'true' else False)
 
 ################################# Logger #################################
 
@@ -44,8 +46,11 @@ config = {
     "temperature" : TEMPERATURE
 }
 
-wandb_logger = WandbLogger(project="minicpm-dense-retrieval")
-
+if IS_LOG:
+    logger = WandbLogger(project="minicpm-dense-retrieval")
+else:
+    logger = None
+      
 ##########################################################################
 
 lora_config = LoraConfig(
@@ -79,7 +84,7 @@ model = MiniCPMEncoder(lora_config=lora_config,
 
 trainer = L.Trainer(
         max_epochs=MAX_EPOCH, 
-        logger=wandb_logger,
+        logger=logger,
         log_every_n_steps=1,
         accelerator="cuda", 
         devices=[1, 2, 3], 
@@ -88,7 +93,7 @@ trainer = L.Trainer(
         precision="bf16-mixed",
         strategy="ddp")
 
-if trainer.global_rank == 0:
-    wandb_logger.experiment.config.update(config)
+if IS_LOG and (trainer.global_rank == 0):
+    logger.experiment.config.update(config)
 
 trainer.fit(model=model)
