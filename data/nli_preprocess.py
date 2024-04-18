@@ -17,7 +17,7 @@ class NLIPreprocess:
                     padding='max_length', 
                     truncation=True, 
                     return_tensors="pt", 
-                    max_length=512)
+                    max_length=150)
         
         out[id + '_input_ids'] = out.pop('input_ids')
         out[id + '_attention_mask'] = out.pop('attention_mask')

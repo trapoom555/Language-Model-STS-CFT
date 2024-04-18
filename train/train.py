@@ -70,7 +70,7 @@ checkpoint_callback = ModelCheckpoint(
         filename="minicpm-{step}-{train_loss:.4f}",
         every_n_train_steps=10)
 
-dataset = NLIDataset('../data/nli_for_simcse.csv')
+dataset = NLIDataset("../data/processed")
 dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
 
 model = MiniCPMEncoder(lora_config=lora_config,

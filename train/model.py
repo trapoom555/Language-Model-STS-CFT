@@ -3,7 +3,7 @@ import lightning as L
 from peft import LoraModel
 import torch.nn.functional as F
 from torch.optim.lr_scheduler import CosineAnnealingLR
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoModelForCausalLM
 
 
 class MiniCPMEncoder(L.LightningModule):
@@ -11,10 +11,6 @@ class MiniCPMEncoder(L.LightningModule):
         super().__init__()
 
         path = '../pretrained/MiniCPM-2B-dpo-bf16/'
-
-        self.tokenizer = AutoTokenizer.from_pretrained(path, local_files_only=True)
-        self.tokenizer.pad_token = self.tokenizer.eos_token
-
         model = AutoModelForCausalLM.from_pretrained(path, 
                                                      torch_dtype=torch.bfloat16, 
                                                      device_map=self.device, 
@@ -31,15 +27,8 @@ class MiniCPMEncoder(L.LightningModule):
         self.n_gpus = n_gpus
         self.temperature = temperature
 
-        self.prompt = """#### Instruct: Given a premise, retrieve a hypothesis that is entailed by the premise Retrieve semantically similar text
-        #### Query: {}"""
-
-    def forward(self, x, with_prompt=False):
-        if with_prompt:
-            x = [self.prompt.format(t) for t in x]
-        inputs = self.tokenizer(x, return_tensors="pt", padding=True, truncation=True, max_length=512).to(self.device)
-        out = self.lora_model(**inputs, output_hidden_states=True).hidden_states[-1][:, -1, :]
-        del inputs
+    def forward(self, x):
+        out = self.lora_model(**x, output_hidden_states=True).hidden_states[-1][:, -1, :]
         return out
     
     def info_nce(self, query, pos, neg):
@@ -75,9 +64,9 @@ class MiniCPMEncoder(L.LightningModule):
     def training_step(self, batch, batch_idx):
         x, pos, neg = batch
 
-        query_em = self.forward(x, with_prompt=False)
-        pos_em = self.forward(pos, with_prompt=False)
-        neg_em = self.forward(neg, with_prompt=False)
+        query_em = self.forward(x)
+        pos_em = self.forward(pos)
+        neg_em = self.forward(neg)
         
         loss = self.info_nce(query_em, pos_em, neg_em)
 
