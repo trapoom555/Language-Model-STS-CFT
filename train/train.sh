@@ -6,4 +6,4 @@ python train.py \
 --temperature 0.05 \
 --lora_rank 8 \
 --max_epoch 2 \
---logging true
+--logging false

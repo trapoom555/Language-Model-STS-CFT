@@ -162,6 +162,7 @@ cython_debug/
 # eval results and datasets
 *.json
 *.csv
+processed/
 
 # lightning logs
 lightning_logs/
