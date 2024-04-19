@@ -28,7 +28,7 @@ LORA_RANK = int(args['lora_rank'])
 MAX_EPOCH = int(args['max_epoch'])
 TEMPERATURE = float(args['temperature'])
 
-BATCH_SIZE = int(args['max_epoch'])  # 4 is safe for RTX3090 (RAM Limit)
+BATCH_SIZE = int(args['batch_size_per_gpu'])  # 4 is safe for RTX3090 (RAM Limit)
 N_GRAD_ACC = int(DESIRE_BATCH_SIZE / N_GPUS / BATCH_SIZE)
 IS_LOG = (True if args['logging'] == 'true' else False)
 
@@ -87,7 +87,7 @@ trainer = L.Trainer(
         logger=logger,
         log_every_n_steps=1,
         accelerator="cuda", 
-        devices=[1, 2, 3], 
+        devices=[0, 1, 2], 
         accumulate_grad_batches=N_GRAD_ACC, 
         callbacks=[checkpoint_callback],
         precision="bf16-mixed",
