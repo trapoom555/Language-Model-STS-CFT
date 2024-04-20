@@ -28,7 +28,7 @@ LORA_RANK = int(args['lora_rank'])
 MAX_EPOCH = int(args['max_epoch'])
 TEMPERATURE = float(args['temperature'])
 
-BATCH_SIZE = int(args['batch_size_per_gpu'])  # 4 is safe for RTX3090 (RAM Limit)
+BATCH_SIZE = int(args['batch_size_per_gpu'])  # 8 is safe for RTX3090 (RAM Limit)
 N_GRAD_ACC = int(DESIRE_BATCH_SIZE / N_GPUS / BATCH_SIZE)
 IS_LOG = (True if args['logging'] == 'true' else False)
 
