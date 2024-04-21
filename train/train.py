@@ -58,6 +58,7 @@ def main(training_args):
     # saving final model
     if trainer.is_fsdp_enabled:
         trainer.accelerator.state.fsdp_plugin.set_state_dict_type("FULL_STATE_DICT")
+    trainer.save_model(training_args.output_dir)
 
 if __name__ == "__main__":
     parser = HfArgumentParser((TrainingArguments))
