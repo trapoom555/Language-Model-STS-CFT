@@ -5,7 +5,11 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("main")
 
-model = MiniCPM()
+model_path = '../../pretrained/MiniCPM-2B-dpo-bf16'
+adapter_path = '../../pretrained/adapter/20240422020420'
+
+model = MiniCPM(model_path=model_path,
+                adapter_path=adapter_path)
 
 TASK_LIST_STS = [
     "BIOSSES",
@@ -17,8 +21,7 @@ TASK_LIST_STS = [
     "STS16",
     "STS17",
     "STS22",
-    "STSBenchmark",
-    "CDSC-R"
+    "STSBenchmark"
 ]
 
 for task in TASK_LIST_STS:
