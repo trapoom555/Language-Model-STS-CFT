@@ -51,11 +51,19 @@ The model for evaluation can be specified in `./model/minicpm.py`. There're 3 im
 
 ### Run Evaluation
 
+- For STS benchmarks
+
 ```bash
-python minicpm_eval.py
+python minicpm_sts_eval.py
 ```
 
-The evaluation results will be saved to `./results/minicpm`.
+- For Retrieval benchmarks
+
+```bash
+python minicpm_retrieval_eval.py
+```
+
+The evaluation results will be saved to `./results/minicpm/sts` and `./results/minicpm/retrieval` respectively.
 
 ## Compare with other models
 

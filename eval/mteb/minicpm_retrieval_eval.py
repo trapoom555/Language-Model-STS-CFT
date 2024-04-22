@@ -39,6 +39,6 @@ TASK_LIST_RETRIEVAL = [
 for task in TASK_LIST_RETRIEVAL:
     logger.info(f"Running task: {task}")
     evaluation = MTEB(tasks=[task], task_langs=["en"])
-    evaluation.run(model, output_folder=f"results/minicpm")
+    evaluation.run(model, output_folder=f"results/minicpm/retrieval")
 
 

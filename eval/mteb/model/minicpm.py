@@ -6,9 +6,14 @@ torch.manual_seed(0)
 
 class MiniCPM:
     def __init__(self):
-        path = 'openbmb/MiniCPM-2B-dpo-bf16'
-        self.tokenizer = AutoTokenizer.from_pretrained(path)
-        self.model = AutoModelForCausalLM.from_pretrained(path, torch_dtype=torch.bfloat16, device_map='cuda', trust_remote_code=True)
+        model_path = '../../pretrained/MiniCPM-2B-dpo-bf16'
+        adapter_path = '../../pretrained/adapter'
+        self.tokenizer = AutoTokenizer.from_pretrained(model_path)
+        self.model = AutoModelForCausalLM.from_pretrained(model_path, 
+                                                          torch_dtype=torch.bfloat16,
+                                                          device_map='cuda',
+                                                          trust_remote_code=True)
+        self.model.load_adapter(adapter_path)
 
     def get_last_hidden_state(self, text):
         inputs = self.tokenizer(text, return_tensors="pt").to('cuda')
@@ -29,7 +34,8 @@ class MiniCPM:
 
         out = []
 
-        prompt = 'This sentence: "{}" means in one word: '
+        # prompt = 'This sentence: "{}" means in one word: '
+        prompt = '{}'
 
         for s in sentences:
             prompted_text = prompt.format(s)
