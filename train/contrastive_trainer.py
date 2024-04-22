@@ -5,6 +5,7 @@ from transformers import Trainer
 class ContrastiveTrainer(Trainer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.temperature = kwargs.get("args").temperature
     
     def encode(self, model, x):
         out = model(**x, output_hidden_states=True).hidden_states[-1][:, -1, :]
@@ -30,7 +31,7 @@ class ContrastiveTrainer(Trainer):
         # Generate label
         labels = torch.arange(len(query)).to(self.accelerator.device)
         # Cross-entropy
-        loss = F.cross_entropy(logits / 0.05, labels, reduction='mean')
+        loss = F.cross_entropy(logits / self.temperature, labels, reduction='mean')
 
         return loss
     
