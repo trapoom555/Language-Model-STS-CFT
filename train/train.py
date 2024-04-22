@@ -8,12 +8,13 @@ from transformers import AutoModelForCausalLM, HfArgumentParser, TrainingArgumen
 def main(training_args):
     set_seed(training_args.seed)
 
-    # Model + PEFT
+    # Model
     model = AutoModelForCausalLM.from_pretrained("../pretrained/MiniCPM-2B-dpo-bf16/", 
                                                 torch_dtype=torch.bfloat16,
                                                 trust_remote_code=True,
                                                 local_files_only=True)
 
+    # PEFT
     lora_config = LoraConfig(init_lora_weights="gaussian",
                             task_type=TaskType.CAUSAL_LM,
                             target_modules=["q_proj", "v_proj"],
@@ -32,14 +33,7 @@ def main(training_args):
                                 train_dataset=train_dataset)
 
     trainer.accelerator.print(f"{trainer.model}")
-
-    # Handle PEFT+FSDP case
     trainer.model.print_trainable_parameters()
-    if getattr(trainer.accelerator.state, "fsdp_plugin", None):
-        from peft.utils.other import fsdp_auto_wrap_policy
-
-        fsdp_plugin = trainer.accelerator.state.fsdp_plugin
-        fsdp_plugin.auto_wrap_policy = fsdp_auto_wrap_policy(trainer.model)
 
     print("FSDP Enable", trainer.is_fsdp_enabled)
 
@@ -55,7 +49,7 @@ def main(training_args):
     trainer.save_model(training_args.output_dir)
 
 if __name__ == "__main__":
-    os.environ["WANDB_PROJECT"] = "minicpm-dense-retrieval"
+    # os.environ["WANDB_PROJECT"] = "minicpm-dense-retrieval"
     parser = HfArgumentParser((TrainingArguments))
     training_args = parser.parse_args_into_dataclasses()[0]
     main(training_args)
