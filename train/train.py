@@ -1,99 +1,81 @@
-import argparse
-import lightning as L
-from peft import LoraConfig
-from model import MiniCPMEncoder
-from dataset_utils import NLIDataset
-from torch.utils.data import DataLoader
-from lightning.pytorch.loggers import WandbLogger
-from lightning.pytorch.callbacks import ModelCheckpoint
+import os
+import torch
+import transformers
+from typing import Optional
+from datasets import load_from_disk
+from dataclasses import dataclass, field
+from contrastive_trainer import ContrastiveTrainer
+from peft import LoraConfig, TaskType, get_peft_model
+from transformers import AutoModelForCausalLM, HfArgumentParser, set_seed
 
-################################# Parser #################################
+@dataclass
+class ModelArguments:
+    model_name_or_path: str = field(
+        metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
+    )
+    lora_alpha: Optional[int] = field(default=32)
+    lora_dropout: Optional[float] = field(default=0.1)
+    lora_r: Optional[int] = field(default=8)
+    lora_target_modules: Optional[str] = field(
+        default="q_proj,v_proj",
+        metadata={"help": "comma separated list of target modules to apply LoRA layers to"},
+    )
 
-parser = argparse.ArgumentParser(description='MiniCPM Training Script')
-parser.add_argument('--desire_batch_size', required=True)
-parser.add_argument('--init_lr', required=True)
-parser.add_argument('--final_lr', required=True)
-parser.add_argument('--lora_rank', required=True)
-parser.add_argument('--max_epoch', required=True)
-parser.add_argument('--temperature', required=True)
-parser.add_argument('--batch_size_per_gpu', required=True)
-parser.add_argument('--logging', required=True)
-args = vars(parser.parse_args())
+@dataclass
+class DataArguments:
+    train_data_path: str = field(
+        metadata={"help": "Path to training data"}
+    )
 
-DESIRE_BATCH_SIZE = int(args['desire_batch_size'])
-N_GPUS = 3
-LR = float(args['init_lr'])
-FINAL_LR = float(args['final_lr'])
-LORA_RANK = int(args['lora_rank'])
-MAX_EPOCH = int(args['max_epoch'])
-TEMPERATURE = float(args['temperature'])
+@dataclass
+class TrainingArguments(transformers.TrainingArguments):
+    temperature: Optional[float] = field(default=0.05)
 
-BATCH_SIZE = int(args['batch_size_per_gpu'])  # 8 is safe for RTX3090 (RAM Limit)
-N_GRAD_ACC = int(DESIRE_BATCH_SIZE / N_GPUS / BATCH_SIZE)
-IS_LOG = (True if args['logging'] == 'true' else False)
+def main(model_args, data_args, training_args):
+    set_seed(training_args.seed)
 
-################################# Logger #################################
+    # Model
+    model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path, 
+                                                torch_dtype=torch.bfloat16,
+                                                trust_remote_code=True,
+                                                local_files_only=True)
 
-config = {
-    "desire_batch_size" : DESIRE_BATCH_SIZE,
-    "init_lr": LR,
-    "final_lr": FINAL_LR,
-    "batch_size_per_gpu" : BATCH_SIZE,
-    "lora_rank" : LORA_RANK,
-    "epoch": MAX_EPOCH,
-    "n_grad_acc": N_GRAD_ACC,
-    "n_gpus" : N_GPUS,
-    "temperature" : TEMPERATURE
-}
+    # PEFT
+    lora_config = LoraConfig(init_lora_weights="gaussian",
+                            task_type=TaskType.CAUSAL_LM,
+                            target_modules=["q_proj", "v_proj"],
+                            r=model_args.lora_r,
+                            lora_alpha=model_args.lora_alpha,
+                            lora_dropout=model_args.lora_dropout,
+                            inference_mode=False)
 
-if IS_LOG:
-    logger = WandbLogger(project="minicpm-dense-retrieval")
-else:
-    logger = None
-      
-##########################################################################
+    model = get_peft_model(model, lora_config)
 
-lora_config = LoraConfig(
-        init_lora_weights="gaussian",
-        task_type="CAUSAL_LM",
-        target_modules=["q_proj", "v_proj"],
-        r=LORA_RANK,
-        lora_alpha=32,
-        lora_dropout=0.1,
-        inference_mode=False)
+    # Data
+    train_dataset = load_from_disk(data_args.train_data_path)
 
-checkpoint_callback = ModelCheckpoint(
-        save_top_k=1,
-        monitor="train_loss",
-        mode="min",
-        dirpath="./checkpoint",
-        filename="minicpm-{step}-{train_loss:.4f}",
-        every_n_train_steps=10)
+    trainer = ContrastiveTrainer(model=model,
+                                args=training_args,
+                                train_dataset=train_dataset)
 
-dataset = NLIDataset("../data/processed")
-dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
+    trainer.accelerator.print(f"{trainer.model}")
+    trainer.model.print_trainable_parameters()
 
-model = MiniCPMEncoder(lora_config=lora_config,
-                       dataloader=dataloader,
-                       lr=LR,
-                       n_grad_acc=N_GRAD_ACC,
-                       max_epochs=MAX_EPOCH,
-                       final_lr = FINAL_LR,
-                       n_gpus=N_GPUS,
-                       temperature=TEMPERATURE)
+    print("FSDP Enable", trainer.is_fsdp_enabled)
 
-trainer = L.Trainer(
-        max_epochs=MAX_EPOCH, 
-        logger=logger,
-        log_every_n_steps=1,
-        accelerator="cuda", 
-        devices=[0, 1, 2], 
-        accumulate_grad_batches=N_GRAD_ACC, 
-        callbacks=[checkpoint_callback],
-        precision="bf16-mixed",
-        strategy="ddp")
+    # Train
+    checkpoint = None
+    if training_args.resume_from_checkpoint is not None:
+        checkpoint = training_args.resume_from_checkpoint
+    trainer.train(resume_from_checkpoint=checkpoint)
 
-if IS_LOG and (trainer.global_rank == 0):
-    logger.experiment.config.update(config)
+    # Saving final model
+    if trainer.is_fsdp_enabled:
+        trainer.accelerator.state.fsdp_plugin.set_state_dict_type("FULL_STATE_DICT")
+    trainer.save_model(training_args.output_dir)
 
-trainer.fit(model=model)
+if __name__ == "__main__":
+    os.environ["WANDB_PROJECT"] = "minicpm-dense-retrieval"
+    parser = HfArgumentParser((ModelArguments, DataArguments, TrainingArguments))
+    model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+    main(model_args, data_args, training_args)
