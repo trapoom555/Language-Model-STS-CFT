@@ -61,8 +61,6 @@ def main(model_args, data_args, training_args):
     trainer.accelerator.print(f"{trainer.model}")
     trainer.model.print_trainable_parameters()
 
-    print("FSDP Enable", trainer.is_fsdp_enabled)
-
     # Train
     checkpoint = None
     if training_args.resume_from_checkpoint is not None:
@@ -70,8 +68,6 @@ def main(model_args, data_args, training_args):
     trainer.train(resume_from_checkpoint=checkpoint)
 
     # Saving final model
-    if trainer.is_fsdp_enabled:
-        trainer.accelerator.state.fsdp_plugin.set_state_dict_type("FULL_STATE_DICT")
     trainer.save_model(training_args.output_dir)
 
 if __name__ == "__main__":

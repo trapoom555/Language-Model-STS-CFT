@@ -23,10 +23,10 @@ mkdir $PROJ_DIR/train/output
 
 ```bash
 conda env create --file=environment.yml
-conda activate fsdp
+conda activate dr
 ```
 
-5. Configure the number of GPUs in your system at `$PROJ_DIR/train/configs/fsdp_config.yaml` in the `num_processes` field
+5. Configure the number of GPUs in your system in `$PROJ_DIR/train/configs/ddp_config.yaml` at the `num_processes` field
 
 6. Run train script
 
@@ -43,4 +43,5 @@ The following training techniques are applied.
 2. LoRA : rank 8
 3. Mixed Precision Training : bf16
 4. Learning Rate Scheduler : CosineAnnealingLR with Warmup
-5. Fully Sharded Data Parallel (FSDP) 
+5. Data Distributed Parallel (DDP)
+6. Efficiently calculate global loss by doing `all_gather` from all GPUs
