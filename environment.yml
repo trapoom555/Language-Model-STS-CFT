@@ -1,4 +1,4 @@
-name: fsdp
+name: dr
 channels:
   - defaults
 dependencies:
