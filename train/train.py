@@ -75,7 +75,7 @@ def main(model_args, data_args, training_args):
     trainer.save_model(training_args.output_dir)
 
 if __name__ == "__main__":
-    os.environ["WANDB_PROJECT"] = "minicpm-dense-retrieval"
+    # os.environ["WANDB_PROJECT"] = "minicpm-dense-retrieval"
     parser = HfArgumentParser((ModelArguments, DataArguments, TrainingArguments))
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
     main(model_args, data_args, training_args)
