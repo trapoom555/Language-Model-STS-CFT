@@ -7,7 +7,7 @@ accelerate launch --config_file ./configs/ddp_config.yaml train.py \
 --temperature 0.05 \
 --train_data_path ../data/processed \
 --learning_rate 5e-5 \
---per_device_train_batch_size 6 \
+--per_device_train_batch_size 7 \
 --bf16 \
 --gradient_accumulation_steps 1 \
 --warmup_steps 100 \

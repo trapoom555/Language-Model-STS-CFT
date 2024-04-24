@@ -1,4 +1,5 @@
 import torch
+from utils import AllGather
 import torch.nn.functional as F
 import torch.distributed as dist
 from transformers import Trainer
@@ -11,20 +12,11 @@ class ContrastiveTrainer(Trainer):
     def encode(self, model, x):
         out = model(**x, output_hidden_states=True).hidden_states[-1][:, -1, :]
         return out
-    
-    def all_gather(self, tensor):
-        all_tensor = [torch.zeros_like(tensor) for i in range(dist.get_world_size())]
-        dist.all_gather(all_tensor, tensor)
-        all_tensor[torch.distributed.get_rank()] = tensor
-        all_tensor = torch.cat(all_tensor, dim=0)
-        return all_tensor
 
     def info_nce(self, query, pos, neg):
         '''
         Use other samples in batch as negative samples.
-
         query, pos, neg : [B, E]
-
         where B is a batch_size, E is an embedding size
         '''
         # Normalize
@@ -32,16 +24,17 @@ class ContrastiveTrainer(Trainer):
         pos = F.normalize(pos, dim=-1)
         neg = F.normalize(neg, dim=-1)
         # All gather
-        all_query = self.all_gather(query)
-        all_pos = self.all_gather(pos)
-        all_neg = self.all_gather(neg)
+        all_pos = AllGather.apply(pos)
+        all_neg = AllGather.apply(neg)
         # Compute cosine sim
-        logits_pos = all_query @ all_pos.T
-        logits_neg = all_query @ all_neg.T
+        logits_pos = query @ all_pos.T
+        logits_neg = query @ all_neg.T
         # Concat logits
         logits = torch.cat((logits_pos, logits_neg), dim=1)
         # Generate label
-        labels = torch.arange(len(all_query)).to(self.accelerator.device)
+        local_batch_size = query.shape[0]
+        rank = dist.get_rank()
+        labels = (torch.arange(len(query)) + local_batch_size * rank).to(self.accelerator.device)
         # Cross-entropy
         loss = F.cross_entropy(logits / self.temperature, labels, reduction='mean')
 
