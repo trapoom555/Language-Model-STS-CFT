@@ -34,7 +34,8 @@ class ContrastiveTrainer(Trainer):
         # Generate label
         local_batch_size = query.shape[0]
         rank = dist.get_rank()
-        labels = (torch.arange(len(query)) + local_batch_size * rank).to(self.accelerator.device)
+        label_offset = local_batch_size * rank
+        labels = (torch.arange(len(query)) + label_offset).to(self.accelerator.device)
         # Cross-entropy
         loss = F.cross_entropy(logits / self.temperature, labels, reduction='mean')
 
