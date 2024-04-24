@@ -1,9 +1,5 @@
-import torch
-from utils import AllGather
-import torch.nn.functional as F
-import torch.distributed as dist
-from transformers import Trainer
 from loss import InfoNCE
+from transformers import Trainer
 
 class ContrastiveTrainer(Trainer):
     def __init__(self, *args, **kwargs):
