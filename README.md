@@ -1,2 +1,2 @@
-# MiniCPM-Dense-Retriever
+# Language-Model-STS-CFT
 THU-NLP final project
