@@ -1,4 +1,4 @@
-name: dr
+name: cft
 channels:
   - defaults
 dependencies:
