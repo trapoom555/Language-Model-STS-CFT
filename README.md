@@ -28,9 +28,9 @@ The base models consist of
 
 We utilize the processed NLI dataset as our fine-tuning dataset. The dataset consists of 275K triplets of anchors, their corresponding entailments along with hard negatives. Please follow [this README](https://github.com/trapoom555/Language-Model-STS-CFT/blob/main/data/README.md) to see how to download the dataset.
 
-## Fine-tuning with your own resource
+## Fine-tuning with your own resources
 
-If you willing to fine-tune the LMs with your own resource, we've provided the code for you. Our code can work with multi-GPUs settings. The more GPUs you have, the larger batch size you can fine-tune.
+If you are willing to fine-tune the LMs with your own resources, we've provided the code for you. Our code can work with multi-GPUs settings. The more GPUs you have, the larger batch size you can fine-tune.
 
 First, you need to setup the virtual environment. We provided the environment setup file you you.
 
