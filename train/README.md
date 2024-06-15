@@ -39,9 +39,8 @@ chmod +x train.sh
 
 The following training techniques are applied.
 
-1. Gradient Accumulation
-2. LoRA : rank 8
-3. Mixed Precision Training : bf16
-4. Learning Rate Scheduler : CosineAnnealingLR with Warmup
-5. Data Distributed Parallel (DDP)
-6. Efficiently calculate global loss by doing `all_gather` from all GPUs
+1. LoRA : rank 8
+2. Mixed Precision Training : bf16
+3. Learning Rate Scheduler : CosineAnnealingLR with Warmup
+4. Data Distributed Parallel (DDP)
+5. Efficiently calculate global loss by doing `all_gather` from all GPUs
