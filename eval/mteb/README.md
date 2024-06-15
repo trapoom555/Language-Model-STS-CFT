@@ -17,50 +17,17 @@ TASK_LIST_STS = [
 ]
 ```
 
-And a retrieval task which is more challenging than the above task.
-
-```python
-TASK_LIST_RETRIEVAL = [
-    "ArguAna",
-    "ClimateFEVER",
-    "CQADupstackAndroidRetrieval",
-    "CQADupstackEnglishRetrieval",
-    "CQADupstackGamingRetrieval",
-    "CQADupstackGisRetrieval",
-    "CQADupstackMathematicaRetrieval",
-    "CQADupstackPhysicsRetrieval",
-    "CQADupstackProgrammersRetrieval",
-    "CQADupstackStatsRetrieval",
-    "CQADupstackTexRetrieval",
-    "CQADupstackUnixRetrieval",
-    "CQADupstackWebmastersRetrieval",
-    "CQADupstackWordpressRetrieval",
-    "DBPedia",
-    "FEVER",
-    "FiQA2018",
-    "HotpotQA",
-    "MSMARCO",
-    "NFCorpus",
-    "NQ",
-    "QuoraRetrieval",
-    "SCIDOCS",
-    "SciFact",
-    "Touche2020",
-    "TRECCOVID"
-]
-```
-
 [MTEB github repository](https://github.com/embeddings-benchmark/mteb) provides us a convenient package for evaluation and is used in this evaluation script.
 
 ## Running Evaluation Script
 
 ### Define Benchmarks for Evaluations
 
-All benchmarks for STS and retrieval tasks are written in `minicpm_sts_eval.py` and `minicpm_retrieval_eval.py` respectively. If you want to test subset of the benchmarks, you can modify `TASK_LIST_RETRIEVAL` list.
+All benchmarks for STS tasks are written in `minicpm_sts_eval.py`. If you want to test subset of the benchmarks, you can modify `TASK_LIST_STS` list.
 
 ### Model
 
-The model for evaluation can be specified in `minicpm_**_eval.py`. 
+The model for evaluation can be specified in `minicpm_sts_eval.py`. 
 
 ## Model class
 
@@ -78,16 +45,10 @@ There're 3 important methods in the class
 python minicpm_sts_eval.py
 ```
 
-- For Retrieval benchmarks
-
-```bash
-python minicpm_retrieval_eval.py
-```
-
-The evaluation results will be saved to `./results/minicpm/sts` and `./results/minicpm/retrieval` respectively.
+The evaluation results will be saved to `./results/minicpm/sts`.
 
 ## Compare with other models
 
-The other model's evaluations can be seen in this [leaderboard](https://huggingface.co/spaces/mteb/leaderboard) in a "Retrieval" section.
+The other model's evaluations can be seen in this [leaderboard](https://huggingface.co/spaces/mteb/leaderboard) in the "STS" section.
 
 
